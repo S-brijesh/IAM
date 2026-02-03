@@ -1,0 +1,43 @@
+# ===============================
+# Common
+# ===============================
+.DS_Store
+Thumbs.db
+*.log
+logs/
+
+# ===============================
+# Environment files
+# ===============================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===============================
+# Node / Server
+# ===============================
+server/node_modules/
+server/npm-debug.log*
+server/yarn-error.log*
+
+# ===============================
+# Client (React / CRA / Vite / Next)
+# ===============================
+client/node_modules/
+client/build/
+client/dist/
+client/.next/
+client/out/
+
+# ===============================
+# IDE / Editor
+# ===============================
+.vscode/
+.idea/
+
+# ===============================
+# OS files
+# ===============================
+*.swp
