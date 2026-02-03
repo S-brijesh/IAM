@@ -1,0 +1,33 @@
+require("dotenv").config();
+const express = require("express");
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/auth.routes");
+const protectedRoutes = require("./routes/protected.routes");
+const adminRoutes = require("./routes/admin.routes");
+const app = express();
+
+
+
+// Middleware
+app.use(express.json());
+
+
+
+// Connect to MongoDB first
+connectDB();
+
+// Routes
+app.use("/api/auth", authRoutes);
+
+
+app.use("/api", protectedRoutes);
+app.use("/api", adminRoutes);
+
+app.get("/", (req, res) => {
+  res.send("IAM Backend Running");
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
