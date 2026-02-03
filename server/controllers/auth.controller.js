@@ -9,7 +9,7 @@ const AuditLog = require("../models/auditLog");
  */
 exports.registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     // Basic validation
     if (!username || !email || !password) {
@@ -29,7 +29,8 @@ exports.registerUser = async (req, res) => {
     const user = await User.create({
       username,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: role || "USER"
     });
 
     // Audit log
