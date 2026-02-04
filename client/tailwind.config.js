@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#4f46e5", // Indigo 600
-        secondary: "#10b981", // Emerald 500
+        primary: "#1e40af", // Corporate Blue
+        secondary: "#059669", // Tech Green
         dark: "#111827", // Gray 900
         light: "#f3f4f6", // Gray 100
       },

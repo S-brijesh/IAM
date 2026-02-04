@@ -6,7 +6,11 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import HRDashboard from './pages/HRDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import UserManagement from './pages/UserManagement';
+import AuditLogs from './pages/AuditLogs';
+import AnnouncementManagement from './pages/AnnouncementManagement';
 
 function App() {
   return (
@@ -27,10 +31,42 @@ function App() {
               }
             />
             <Route
+              path="/hr"
+              element={
+                <ProtectedRoute hrOnly>
+                  <HRDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/announcements"
+              element={
+                <ProtectedRoute hrOnly>
+                  <AnnouncementManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin"
               element={
                 <ProtectedRoute adminOnly>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute adminOnly>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/audit-logs"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AuditLogs />
                 </ProtectedRoute>
               }
             />

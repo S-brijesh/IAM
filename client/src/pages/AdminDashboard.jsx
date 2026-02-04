@@ -34,41 +34,35 @@ const AdminDashboard = () => {
     const stats = [
         {
             title: 'Total Users',
-            value: '1,234',
+            value: dashboardData?.statistics?.totalUsers || 0,
             icon: <Users className="h-8 w-8" />,
             color: 'bg-blue-500',
-            trend: '+12%',
+            trend: `+${dashboardData?.statistics?.newUsers || 0} this week`,
         },
         {
             title: 'Active Sessions',
-            value: '456',
+            value: dashboardData?.statistics?.activeSessions || 0,
             icon: <Activity className="h-8 w-8" />,
             color: 'bg-green-500',
-            trend: '+8%',
+            trend: 'Last 24h',
         },
         {
             title: 'Security Events',
-            value: '23',
+            value: dashboardData?.statistics?.securityEvents || 0,
             icon: <AlertCircle className="h-8 w-8" />,
             color: 'bg-yellow-500',
-            trend: '-5%',
+            trend: 'Failed logins',
         },
         {
             title: 'Admin Users',
-            value: '12',
+            value: dashboardData?.statistics?.adminUsers || 0,
             icon: <Shield className="h-8 w-8" />,
             color: 'bg-purple-500',
-            trend: '+2',
+            trend: 'IT Admins',
         },
     ];
 
-    const recentActivities = [
-        { user: 'john@example.com', action: 'Login Success', time: '2 minutes ago', status: 'success' },
-        { user: 'jane@example.com', action: 'Password Changed', time: '15 minutes ago', status: 'info' },
-        { user: 'admin@example.com', action: 'User Created', time: '1 hour ago', status: 'success' },
-        { user: 'test@example.com', action: 'Login Failed', time: '2 hours ago', status: 'error' },
-        { user: 'user@example.com', action: 'Profile Updated', time: '3 hours ago', status: 'info' },
-    ];
+    const recentActivities = dashboardData?.recentActivities || [];
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -196,15 +190,21 @@ const AdminDashboard = () => {
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">Database</span>
-                                    <span className="text-green-600 font-semibold">Healthy</span>
+                                    <span className="text-green-600 font-semibold">
+                                        {dashboardData?.systemHealth?.database || 'Healthy'}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">API Server</span>
-                                    <span className="text-green-600 font-semibold">Online</span>
+                                    <span className="text-green-600 font-semibold">
+                                        {dashboardData?.systemHealth?.apiServer || 'Online'}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">Response Time</span>
-                                    <span className="text-green-600 font-semibold">45ms</span>
+                                    <span className="text-green-600 font-semibold">
+                                        {dashboardData?.systemHealth?.responseTime || '45ms'}
+                                    </span>
                                 </div>
                             </div>
                         </div>

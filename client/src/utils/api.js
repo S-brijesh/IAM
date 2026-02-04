@@ -43,10 +43,26 @@ export const authAPI = {
 
 export const userAPI = {
     getProfile: () => api.get('/api/profile'),
+    getAnnouncements: () => api.get('/api/announcements'),
+};
+
+export const hrAPI = {
+    getDashboard: () => api.get('/api/hr/dashboard'),
+    getAllEmployees: () => api.get('/api/hr/employees'),
+    postAnnouncement: (data) => api.post('/api/hr/announcements', data),
+    getAnnouncements: () => api.get('/api/announcements'),
 };
 
 export const adminAPI = {
     getDashboard: () => api.get('/api/admin/dashboard'),
+    getAllUsers: () => api.get('/api/admin/users'),
+    getUserById: (id) => api.get(`/api/admin/users/${id}`),
+    updateUser: (id, data) => api.put(`/api/admin/users/${id}`, data),
+    deleteUser: (id) => api.delete(`/api/admin/users/${id}`),
+    activateUser: (id) => api.patch(`/api/admin/users/${id}/activate`),
+    getAuditLogs: (action) => api.get('/api/admin/audit-logs', { params: { action } }),
+    getSystemStats: () => api.get('/api/admin/stats'),
 };
 
 export default api;
+

@@ -9,16 +9,36 @@ const AuditLog = require("../models/auditLog");
  */
 exports.registerUser = async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const {
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
+      role,
+      department,
+      position,
+      phoneNumber
+    } = req.body;
 
     // Basic validation
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
+    if (!firstName || !lastName || !username || !email || !password) {
+      await AuditLog.create({
+        userId: null,
+        action: "REGISTRATION_FAILED: Missing required fields",
+        ip: req.ip
+      });
+      return res.status(400).json({ message: "All required fields must be filled" });
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      await AuditLog.create({
+        userId: null,
+        action: `REGISTRATION_FAILED: Email already exists - ${email}`,
+        ip: req.ip
+      });
       return res.status(409).json({ message: "User already exists" });
     }
 
@@ -27,10 +47,15 @@ exports.registerUser = async (req, res) => {
 
     // Create user
     const user = await User.create({
+      firstName,
+      lastName,
       username,
       email,
       password: hashedPassword,
-      role: role || "USER"
+      role: role || "EMPLOYEE",
+      department: department || "Engineering",
+      position: position || "Employee",
+      phoneNumber: phoneNumber || ""
     });
 
     // Audit log
@@ -42,10 +67,15 @@ exports.registerUser = async (req, res) => {
 
     return res.status(201).json({
       message: "User registered successfully",
-      userId: user._id
+      userId: user._id,
     });
   } catch (err) {
     console.error("Registration error:", err);
+    await AuditLog.create({
+      userId: null,
+      action: "REGISTRATION_ERROR: System error",
+      ip: req.ip
+    });
     return res.status(500).json({ message: "Registration failed" });
   }
 };

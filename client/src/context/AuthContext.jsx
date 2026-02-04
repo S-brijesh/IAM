@@ -51,9 +51,9 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (username, email, password, role = 'USER') => {
+    const register = async (employeeData) => {
         try {
-            await authAPI.register({ username, email, password, role });
+            await authAPI.register(employeeData);
             return { success: true };
         } catch (error) {
             return {
@@ -75,7 +75,8 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'ADMIN',
+        isHRManager: user?.role === 'HR_MANAGER' || user?.role === 'IT_ADMIN',
+        isITAdmin: user?.role === 'IT_ADMIN',
         loading,
     };
 

@@ -1,16 +1,21 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, AlertCircle, CheckCircle, UserPlus } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, CheckCircle, UserPlus, Building, Briefcase, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Register = () => {
     const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
         username: '',
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'USER',
+        role: 'EMPLOYEE',
+        department: 'Engineering',
+        position: '',
+        phoneNumber: '',
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -43,12 +48,10 @@ const Register = () => {
 
         setLoading(true);
 
-        const result = await register(
-            formData.username,
-            formData.email,
-            formData.password,
-            formData.role
-        );
+        // Remove confirmPassword before sending
+        const { confirmPassword, ...employeeData } = formData;
+
+        const result = await register(employeeData);
 
         if (result.success) {
             setSuccess(true);
@@ -63,12 +66,12 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-indigo-50 to-green-100 py-12 px-4 sm:px-6 lg:px-8">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-2xl"
+                className="max-w-2xl w-full space-y-8 bg-white p-8 rounded-2xl shadow-2xl"
             >
                 <div>
                     <div className="flex justify-center">
@@ -77,13 +80,13 @@ const Register = () => {
                         </div>
                     </div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Create your account
+                        Join TechCorp Solutions
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
                         Already have an account?{' '}
                         <Link
                             to="/login"
-                            className="font-medium text-primary hover:text-indigo-700"
+                            className="font-medium text-primary hover:text-blue-800"
                         >
                             Sign in
                         </Link>
@@ -115,10 +118,55 @@ const Register = () => {
                 )}
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* First Name */}
+                        <div>
+                            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                                First Name *
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <User className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="firstName"
+                                    name="firstName"
+                                    type="text"
+                                    required
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="John"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Last Name */}
+                        <div>
+                            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                                Last Name *
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <User className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="lastName"
+                                    name="lastName"
+                                    type="text"
+                                    required
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Doe"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Username */}
                         <div>
                             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                                Username
+                                Username *
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -137,9 +185,10 @@ const Register = () => {
                             </div>
                         </div>
 
+                        {/* Email */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                Email address
+                                Email Address *
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -154,14 +203,105 @@ const Register = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                                    placeholder="you@example.com"
+                                    placeholder="john@techcorp.com"
                                 />
                             </div>
                         </div>
 
+                        {/* Department */}
+                        <div>
+                            <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
+                                Department *
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Building className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <select
+                                    id="department"
+                                    name="department"
+                                    value={formData.department}
+                                    onChange={handleChange}
+                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                >
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Human Resources">Human Resources</option>
+                                    <option value="IT Operations">IT Operations</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Operations">Operations</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Position */}
+                        <div>
+                            <label htmlFor="position" className="block text-sm font-medium text-gray-700 mb-1">
+                                Position
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Briefcase className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="position"
+                                    name="position"
+                                    type="text"
+                                    value={formData.position}
+                                    onChange={handleChange}
+                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="Software Engineer"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Phone Number */}
+                        <div>
+                            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                                Phone Number
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Phone className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    id="phoneNumber"
+                                    name="phoneNumber"
+                                    type="tel"
+                                    value={formData.phoneNumber}
+                                    onChange={handleChange}
+                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    placeholder="+1 234 567 8900"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Role */}
+                        <div>
+                            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                                Role *
+                            </label>
+                            <select
+                                id="role"
+                                name="role"
+                                value={formData.role}
+                                onChange={handleChange}
+                                className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            >
+                                <option value="EMPLOYEE">Employee</option>
+                                <option value="HR_MANAGER">HR Manager</option>
+                                <option value="IT_ADMIN">IT Administrator</option>
+                            </select>
+                            <p className="mt-1 text-xs text-gray-500">
+                                Select your role based on your responsibilities
+                            </p>
+                        </div>
+
+                        {/* Password */}
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                Password
+                                Password *
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -181,9 +321,10 @@ const Register = () => {
                             </div>
                         </div>
 
+                        {/* Confirm Password */}
                         <div>
                             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                                Confirm Password
+                                Confirm Password *
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -202,32 +343,13 @@ const Register = () => {
                                 />
                             </div>
                         </div>
-
-                        <div>
-                            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                                Account Type
-                            </label>
-                            <select
-                                id="role"
-                                name="role"
-                                value={formData.role}
-                                onChange={handleChange}
-                                className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            >
-                                <option value="USER">Regular User</option>
-                                <option value="ADMIN">Administrator</option>
-                            </select>
-                            <p className="mt-1 text-xs text-gray-500">
-                                Select ADMIN only if you need administrative privileges
-                            </p>
-                        </div>
                     </div>
 
                     <div>
                         <button
                             type="submit"
                             disabled={loading || success}
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-secondary hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-secondary hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>

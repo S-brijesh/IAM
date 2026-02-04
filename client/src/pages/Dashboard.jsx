@@ -1,27 +1,41 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userAPI } from '../utils/api';
-import { User, Mail, Shield, Calendar, CheckCircle } from 'lucide-react';
+import { User, Mail, Shield, Calendar, CheckCircle, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Dashboard = () => {
     const { user } = useAuth();
     const [profile, setProfile] = useState(null);
+    const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetchProfile();
+        fetchData();
     }, []);
 
-    const fetchProfile = async () => {
+    const fetchData = async () => {
         try {
-            const response = await userAPI.getProfile();
-            setProfile(response.data);
+            const [profileRes, announcementsRes] = await Promise.all([
+                userAPI.getProfile(),
+                userAPI.getAnnouncements()
+            ]);
+            setProfile(profileRes.data);
+            setAnnouncements(announcementsRes.data.announcements);
             setLoading(false);
         } catch (err) {
-            setError('Failed to load profile');
+            setError('Failed to load dashboard data');
             setLoading(false);
+        }
+    };
+
+    const getPriorityColor = (priority) => {
+        switch (priority) {
+            case 'HIGH': return 'bg-red-100 text-red-800 border-red-300';
+            case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+            case 'LOW': return 'bg-green-100 text-green-800 border-green-300';
+            default: return 'bg-gray-100 text-gray-800 border-gray-300';
         }
     };
 
@@ -108,6 +122,54 @@ const Dashboard = () => {
                         )}
                     </div>
 
+                    {/* Announcements Section */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="bg-white rounded-2xl shadow-xl p-8 mb-8"
+                    >
+                        <div className="flex items-center mb-6">
+                            <Bell className="h-6 w-6 text-primary mr-2" />
+                            <h2 className="text-2xl font-bold text-gray-900">Company Announcements</h2>
+                        </div>
+
+                        {announcements.length === 0 ? (
+                            <div className="text-center py-8">
+                                <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                <p className="text-gray-500">No announcements at this time</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {announcements.slice(0, 5).map((announcement) => (
+                                    <div
+                                        key={announcement._id}
+                                        className={`p-4 rounded-lg border-l-4 ${
+                                            announcement.priority === 'HIGH' ? 'border-red-500 bg-red-50' :
+                                            announcement.priority === 'MEDIUM' ? 'border-yellow-500 bg-yellow-50' :
+                                            'border-green-500 bg-green-50'
+                                        }`}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <div className="flex items-center space-x-2 mb-1">
+                                                    <h3 className="font-bold text-gray-900">{announcement.title}</h3>
+                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full border ${getPriorityColor(announcement.priority)}`}>
+                                                        {announcement.priority}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-700 text-sm mb-2">{announcement.content}</p>
+                                                <p className="text-xs text-gray-500">
+                                                    Posted {new Date(announcement.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </motion.div>
+
                     {/* Quick Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <motion.div
@@ -120,7 +182,8 @@ const Dashboard = () => {
                                 <div>
                                     <p className="text-gray-600 text-sm">Account Type</p>
                                     <p className="text-2xl font-bold text-gray-900 mt-1">
-                                        {user?.role === 'ADMIN' ? 'Administrator' : 'Standard User'}
+                                        {user?.role === 'IT_ADMIN' ? 'Administrator' : 
+                                         user?.role === 'HR_MANAGER' ? 'HR Manager' : 'Employee'}
                                     </p>
                                 </div>
                                 <Shield className="h-12 w-12 text-primary opacity-20" />

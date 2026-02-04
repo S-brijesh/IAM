@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth.routes");
 const protectedRoutes = require("./routes/protected.routes");
 const adminRoutes = require("./routes/admin.routes");
+const hrRoutes = require("./routes/hr.routes");
 const app = express();
 
 
@@ -27,6 +28,7 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api", protectedRoutes);
 app.use("/api", adminRoutes);
+app.use("/api", hrRoutes);
 
 app.get("/", (req, res) => {
   res.send("IAM Backend Running");
