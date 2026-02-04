@@ -189,42 +189,6 @@ const HRDashboard = () => {
                         </div>
                     </motion.div>
                 </div>
-
-                {/* Quick Actions */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7 }}
-                    className="mt-8 bg-gradient-to-r from-primary to-secondary rounded-xl shadow-lg p-6 text-white"
-                >
-                    <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button 
-                            onClick={() => navigate('/announcements')}
-                            className="bg-white bg-opacity-20 hover:bg-opacity-30 transition-all p-4 rounded-lg text-left"
-                        >
-                            <Bell className="h-6 w-6 mb-2" />
-                            <p className="font-semibold">Manage Announcements</p>
-                            <p className="text-sm opacity-90">Post and manage company announcements</p>
-                        </button>
-                        <button 
-                            onClick={() => navigate('/dashboard')}
-                            className="bg-white bg-opacity-20 hover:bg-opacity-30 transition-all p-4 rounded-lg text-left"
-                        >
-                            <Users className="h-6 w-6 mb-2" />
-                            <p className="font-semibold">Employee Dashboard</p>
-                            <p className="text-sm opacity-90">View employee information</p>
-                        </button>
-                        <button 
-                            onClick={() => navigate('/hr')}
-                            className="bg-white bg-opacity-20 hover:bg-opacity-30 transition-all p-4 rounded-lg text-left"
-                        >
-                            <TrendingUp className="h-6 w-6 mb-2" />
-                            <p className="font-semibold">HR Analytics</p>
-                            <p className="text-sm opacity-90">View statistics and reports</p>
-                        </button>
-                    </div>
-                </motion.div>
             </div>
         </div>
     );

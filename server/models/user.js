@@ -62,7 +62,8 @@ const userSchema = new mongoose.Schema(
 
     phoneNumber: {
       type: String,
-      default: ""
+      default: "",
+      sparse: true
     },
 
     isActive: {
@@ -71,6 +72,16 @@ const userSchema = new mongoose.Schema(
     }
   },
   { timestamps: true }
+);
+
+// Create unique index for phoneNumber (only when not empty)
+userSchema.index(
+  { phoneNumber: 1 },
+  { 
+    unique: true, 
+    sparse: true,
+    partialFilterExpression: { phoneNumber: { $ne: "" } }
+  }
 );
 
 // Generate employee ID before saving

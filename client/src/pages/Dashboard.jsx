@@ -86,7 +86,7 @@ const Dashboard = () => {
                                     <div>
                                         <p className="text-sm text-gray-600">User ID</p>
                                         <p className="text-lg font-semibold text-gray-900">
-                                            {profile?.user?.userId || 'N/A'}
+                                            {profile?.user?.username || 'N/A'}
                                         </p>
                                     </div>
                                 </div>
@@ -188,54 +188,8 @@ const Dashboard = () => {
                                 </div>
                                 <Shield className="h-12 w-12 text-primary opacity-20" />
                             </div>
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="bg-white rounded-xl shadow-lg p-6"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm">Security Level</p>
-                                    <p className="text-2xl font-bold text-green-600 mt-1">High</p>
-                                </div>
-                                <CheckCircle className="h-12 w-12 text-green-500 opacity-20" />
-                            </div>
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.3 }}
-                            className="bg-white rounded-xl shadow-lg p-6"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm">Authentication</p>
-                                    <p className="text-2xl font-bold text-gray-900 mt-1">JWT</p>
-                                </div>
-                                <Mail className="h-12 w-12 text-primary opacity-20" />
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Info Box */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.4 }}
-                        className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6"
-                    >
-                        <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                            🎉 Welcome to SecureIAM Dashboard
-                        </h3>
-                        <p className="text-blue-700">
-                            Your account is secured with industry-standard encryption and authentication.
-                            All activities are logged for security purposes.
-                        </p>
-                    </motion.div>
+                        </motion.div>                        
+                    </div>                
                 </motion.div>
             </div>
         </div>

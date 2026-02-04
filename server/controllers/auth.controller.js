@@ -26,20 +26,39 @@ exports.registerUser = async (req, res) => {
       await AuditLog.create({
         userId: null,
         action: "REGISTRATION_FAILED: Missing required fields",
-        ip: req.ip
+        
       });
       return res.status(400).json({ message: "All required fields must be filled" });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    // Check if email already exists
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
       await AuditLog.create({
         userId: null,
         action: `REGISTRATION_FAILED: Email already exists - ${email}`,
-        ip: req.ip
+        
       });
-      return res.status(409).json({ message: "User already exists" });
+      return res.status(409).json({ 
+        message: "User with this email already exists",
+        field: "email"
+      });
+    }
+
+    // Check if phone number already exists (only if provided and not empty)
+    if (phoneNumber && phoneNumber.trim() !== "") {
+      const existingPhone = await User.findOne({ phoneNumber: phoneNumber.trim() });
+      if (existingPhone) {
+        await AuditLog.create({
+          userId: null,
+          action: `REGISTRATION_FAILED: Phone number already exists - ${phoneNumber}`,
+          
+        });
+        return res.status(409).json({ 
+          message: "User with this phone number already exists",
+          field: "phoneNumber"
+        });
+      }
     }
 
     // Hash password
@@ -55,14 +74,14 @@ exports.registerUser = async (req, res) => {
       role: role || "EMPLOYEE",
       department: department || "Engineering",
       position: position || "Employee",
-      phoneNumber: phoneNumber || ""
+      phoneNumber: phoneNumber ? phoneNumber.trim() : ""
     });
 
     // Audit log
     await AuditLog.create({
       userId: user._id,
       action: "USER_REGISTERED",
-      ip: req.ip
+      
     });
 
     return res.status(201).json({
@@ -71,10 +90,31 @@ exports.registerUser = async (req, res) => {
     });
   } catch (err) {
     console.error("Registration error:", err);
+    
+    // Handle MongoDB duplicate key error
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      let message = "Duplicate entry detected";
+      
+      if (field === "email") {
+        message = "User with this email already exists";
+      } else if (field === "phoneNumber") {
+        message = "User with this phone number already exists";
+      }
+      
+      await AuditLog.create({
+        userId: null,
+        action: `REGISTRATION_FAILED: Duplicate ${field}`,
+        
+      });
+      
+      return res.status(409).json({ message, field });
+    }
+    
     await AuditLog.create({
       userId: null,
       action: "REGISTRATION_ERROR: System error",
-      ip: req.ip
+      
     });
     return res.status(500).json({ message: "Registration failed" });
   }
@@ -95,23 +135,30 @@ exports.loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     // User not found or inactive
-    if (!user || !user.isActive) {
+    if (!user) {
       await AuditLog.create({
         userId: null,
         action: "LOGIN_FAILED",
-        ip: req.ip
+        
       });
 
       return res.status(401).json({ message: "Invalid credentials" });
     }
-
+    if(!user.isActive){
+      await AuditLog.create({
+        userId: user._id,
+        action: "User is Inactive",
+        
+      });
+      return res.status(401).json({ message: "User is Inactive" });
+    }
     // Password check
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       await AuditLog.create({
         userId: user._id,
         action: "LOGIN_FAILED",
-        ip: req.ip
+        
       });
 
       return res.status(401).json({ message: "Invalid credentials" });
@@ -128,7 +175,7 @@ exports.loginUser = async (req, res) => {
     await AuditLog.create({
       userId: user._id,
       action: "LOGIN_SUCCESS",
-      ip: req.ip
+      
     });
 
     return res.json({

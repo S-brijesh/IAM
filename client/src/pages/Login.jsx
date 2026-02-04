@@ -12,20 +12,49 @@ const Login = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
+    // Clear error when user starts typing
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
+        if (error) setError('');
+    };
+
+    const handlePasswordChange = (e) => {
+        setPassword(e.target.value);
+        if (error) setError('');
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent any event bubbling
+        
+        // Clear previous error
         setError('');
         setLoading(true);
 
-        const result = await login(email, password);
+        try {
+            console.log('Attempting login...');
+            const result = await login(email, password);
+            console.log('Login result:', result);
 
-        if (result.success) {
-            navigate('/dashboard');
-        } else {
-            setError(result.message);
+            // Only navigate if login was explicitly successful
+            if (result && result.success === true) {
+                console.log('Login successful, navigating to dashboard...');
+                // Small delay to ensure state is updated
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 100);
+            } else {
+                // Login failed - show error and stay on page
+                console.log('Login failed, showing error');
+                const errorMessage = result?.message || 'Invalid email or password. Please try again.';
+                setError(errorMessage);
+                setLoading(false);
+            }
+        } catch (err) {
+            console.error('Login exception:', err);
+            setError('An unexpected error occurred. Please try again.');
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     return (
@@ -84,7 +113,7 @@ const Login = () => {
                                     autoComplete="email"
                                     required
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={handleEmailChange}
                                     className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     placeholder="you@example.com"
                                 />
@@ -106,7 +135,7 @@ const Login = () => {
                                     autoComplete="current-password"
                                     required
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={handlePasswordChange}
                                     className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     placeholder="••••••••"
                                 />
@@ -129,14 +158,7 @@ const Login = () => {
                     </div>
                 </form>
 
-                <div className="text-center">
-                    <p className="text-sm text-gray-600">
-                        Demo credentials: <br />
-                        <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                            admin@example.com / admin123
-                        </span>
-                    </p>
-                </div>
+               
             </motion.div>
         </div>
     );

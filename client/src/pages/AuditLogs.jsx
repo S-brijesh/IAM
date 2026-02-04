@@ -55,10 +55,6 @@ const AuditLogs = () => {
                                     <p className="text-indigo-100">System activity monitoring</p>
                                 </div>
                             </div>
-                            <button className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-50 transition-colors flex items-center">
-                                <Download className="h-5 w-5 mr-2" />
-                                Export
-                            </button>
                         </div>
                     </div>
 
@@ -68,7 +64,7 @@ const AuditLogs = () => {
                             <Filter className="h-5 w-5 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Filter by action (e.g., LOGIN, USER, FAILED)..."
+                                placeholder="Filter by action"
                                 value={filterAction}
                                 onChange={(e) => setFilterAction(e.target.value)}
                                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -91,9 +87,7 @@ const AuditLogs = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Action
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            IP Address
-                                        </th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -115,9 +109,7 @@ const AuditLogs = () => {
                                                     {log.action}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {log.ip || 'N/A'}
-                                            </td>
+                                           
                                         </tr>
                                     ))}
                                 </tbody>

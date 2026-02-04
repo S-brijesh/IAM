@@ -42,11 +42,18 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('user', JSON.stringify(userData));
             setUser(userData);
 
+            console.log('Login successful:', userData);
             return { success: true };
         } catch (error) {
+            console.log('Login failed:', error.response?.data?.message);
+            // Ensure user state is cleared on failed login
+            setUser(null);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            
             return {
                 success: false,
-                message: error.response?.data?.message || 'Login failed',
+                message: error.response?.data?.message || 'Invalid email or password',
             };
         }
     };
@@ -59,6 +66,7 @@ export const AuthProvider = ({ children }) => {
             return {
                 success: false,
                 message: error.response?.data?.message || 'Registration failed',
+                field: error.response?.data?.field || null,
             };
         }
     };

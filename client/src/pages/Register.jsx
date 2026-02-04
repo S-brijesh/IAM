@@ -18,16 +18,141 @@ const Register = () => {
         phoneNumber: '',
     });
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const { register } = useAuth();
     const navigate = useNavigate();
 
+    // Validation functions
+    const validateField = (name, value) => {
+        let error = '';
+
+        switch (name) {
+            case 'firstName':
+            case 'lastName':
+                if (!value.trim()) {
+                    error = `${name === 'firstName' ? 'First' : 'Last'} name is required`;
+                } else if (value.trim().length < 2) {
+                    error = `${name === 'firstName' ? 'First' : 'Last'} name must be at least 2 characters`;
+                } else if (value.trim().length > 50) {
+                    error = `${name === 'firstName' ? 'First' : 'Last'} name must not exceed 50 characters`;
+                } else if (!/^[a-zA-Z\s'-]+$/.test(value)) {
+                    error = `${name === 'firstName' ? 'First' : 'Last'} name can only contain letters, spaces, hyphens, and apostrophes`;
+                }
+                break;
+
+            case 'username':
+                if (!value.trim()) {
+                    error = 'Username is required';
+                } else if (value.length < 3) {
+                    error = 'Username must be at least 3 characters';
+                } else if (value.length > 30) {
+                    error = 'Username must not exceed 30 characters';
+                } else if (!/^[a-zA-Z0-9_.-]+$/.test(value)) {
+                    error = 'Username can only contain letters, numbers, dots, hyphens, and underscores';
+                } else if (/^[._-]/.test(value) || /[._-]$/.test(value)) {
+                    error = 'Username cannot start or end with special characters';
+                }
+                break;
+
+            case 'email':
+                if (!value.trim()) {
+                    error = 'Email is required';
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    error = 'Please enter a valid email address';
+                } else if (value.length > 100) {
+                    error = 'Email must not exceed 100 characters';
+                }
+                break;
+
+            case 'password':
+                if (!value) {
+                    error = 'Password is required';
+                } else if (value.length < 8) {
+                    error = 'Password must be at least 8 characters';
+                } else if (value.length > 128) {
+                    error = 'Password must not exceed 128 characters';
+                } else if (!/(?=.*[a-z])/.test(value)) {
+                    error = 'Password must contain at least one lowercase letter';
+                } else if (!/(?=.*[A-Z])/.test(value)) {
+                    error = 'Password must contain at least one uppercase letter';
+                } else if (!/(?=.*\d)/.test(value)) {
+                    error = 'Password must contain at least one number';
+                } else if (!/(?=.*[@$!%*?&])/.test(value)) {
+                    error = 'Password must contain at least one special character (@$!%*?&)';
+                } else if (/\s/.test(value)) {
+                    error = 'Password cannot contain spaces';
+                }
+                break;
+
+            case 'confirmPassword':
+                if (!value) {
+                    error = 'Please confirm your password';
+                } else if (value !== formData.password) {
+                    error = 'Passwords do not match';
+                }
+                break;
+
+            case 'phoneNumber':
+                if (value && value.trim()) {
+                    // Remove all non-digit characters for validation
+                    const digitsOnly = value.replace(/\D/g, '');
+                    if (digitsOnly.length < 10) {
+                        error = 'Phone number must be at least 10 digits';
+                    } else if (digitsOnly.length > 15) {
+                        error = 'Phone number must not exceed 15 digits';
+                    } else if (!/^[\d\s+()-]+$/.test(value)) {
+                        error = 'Phone number can only contain digits, spaces, +, -, and ()';
+                    }
+                }
+                break;
+
+            case 'position':
+                if (value && value.trim()) {
+                    if (value.trim().length < 2) {
+                        error = 'Position must be at least 2 characters';
+                    } else if (value.trim().length > 100) {
+                        error = 'Position must not exceed 100 characters';
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        return error;
+    };
+
     const handleChange = (e) => {
+        const { name, value } = e.target;
+        
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [name]: value,
         });
+
+        // Real-time validation
+        const error = validateField(name, value);
+        setFieldErrors(prev => ({
+            ...prev,
+            [name]: error
+        }));
+
+        // Clear general error when user starts typing
+        if (error === '') {
+            setError('');
+        }
+    };
+
+    const handleBlur = (e) => {
+        const { name, value } = e.target;
+        const error = validateField(name, value);
+        setFieldErrors(prev => ({
+            ...prev,
+            [name]: error
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -35,14 +160,24 @@ const Register = () => {
         setError('');
         setSuccess(false);
 
-        // Validation
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
+        // Validate all fields
+        const errors = {};
+        Object.keys(formData).forEach(key => {
+            if (key !== 'confirmPassword') {
+                const error = validateField(key, formData[key]);
+                if (error) errors[key] = error;
+            }
+        });
 
-        if (formData.password.length < 6) {
-            setError('Password must be at least 6 characters');
+        // Validate confirm password separately
+        const confirmPasswordError = validateField('confirmPassword', formData.confirmPassword);
+        if (confirmPasswordError) errors.confirmPassword = confirmPasswordError;
+
+        setFieldErrors(errors);
+
+        // If there are any errors, don't submit
+        if (Object.keys(errors).length > 0) {
+            setError('Please fix all validation errors before submitting');
             return;
         }
 
@@ -59,6 +194,13 @@ const Register = () => {
                 navigate('/login');
             }, 2000);
         } else {
+            // Handle specific field errors from backend
+            if (result.field) {
+                setFieldErrors(prev => ({
+                    ...prev,
+                    [result.field]: result.message
+                }));
+            }
             setError(result.message);
         }
 
@@ -135,10 +277,18 @@ const Register = () => {
                                     required
                                     value={formData.firstName}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    onBlur={handleBlur}
+                                    className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                                        fieldErrors.firstName ? 'border-red-500' : 'border-gray-300'
+                                    } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                                        fieldErrors.firstName ? 'focus:ring-red-500' : 'focus:ring-primary'
+                                    } focus:border-transparent transition-all`}
                                     placeholder="John"
                                 />
                             </div>
+                            {fieldErrors.firstName && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.firstName}</p>
+                            )}
                         </div>
 
                         {/* Last Name */}
@@ -157,10 +307,18 @@ const Register = () => {
                                     required
                                     value={formData.lastName}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    onBlur={handleBlur}
+                                    className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                                        fieldErrors.lastName ? 'border-red-500' : 'border-gray-300'
+                                    } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                                        fieldErrors.lastName ? 'focus:ring-red-500' : 'focus:ring-primary'
+                                    } focus:border-transparent transition-all`}
                                     placeholder="Doe"
                                 />
                             </div>
+                            {fieldErrors.lastName && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.lastName}</p>
+                            )}
                         </div>
 
                         {/* Username */}
@@ -179,10 +337,18 @@ const Register = () => {
                                     required
                                     value={formData.username}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    onBlur={handleBlur}
+                                    className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                                        fieldErrors.username ? 'border-red-500' : 'border-gray-300'
+                                    } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                                        fieldErrors.username ? 'focus:ring-red-500' : 'focus:ring-primary'
+                                    } focus:border-transparent transition-all`}
                                     placeholder="johndoe"
                                 />
                             </div>
+                            {fieldErrors.username && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.username}</p>
+                            )}
                         </div>
 
                         {/* Email */}
@@ -202,10 +368,18 @@ const Register = () => {
                                     required
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    onBlur={handleBlur}
+                                    className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                                        fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                                    } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                                        fieldErrors.email ? 'focus:ring-red-500' : 'focus:ring-primary'
+                                    } focus:border-transparent transition-all`}
                                     placeholder="john@techcorp.com"
                                 />
                             </div>
+                            {fieldErrors.email && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                            )}
                         </div>
 
                         {/* Department */}
@@ -250,10 +424,18 @@ const Register = () => {
                                     type="text"
                                     value={formData.position}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    onBlur={handleBlur}
+                                    className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                                        fieldErrors.position ? 'border-red-500' : 'border-gray-300'
+                                    } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                                        fieldErrors.position ? 'focus:ring-red-500' : 'focus:ring-primary'
+                                    } focus:border-transparent transition-all`}
                                     placeholder="Software Engineer"
                                 />
                             </div>
+                            {fieldErrors.position && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.position}</p>
+                            )}
                         </div>
 
                         {/* Phone Number */}
@@ -271,10 +453,18 @@ const Register = () => {
                                     type="tel"
                                     value={formData.phoneNumber}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    onBlur={handleBlur}
+                                    className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                                        fieldErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                                    } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                                        fieldErrors.phoneNumber ? 'focus:ring-red-500' : 'focus:ring-primary'
+                                    } focus:border-transparent transition-all`}
                                     placeholder="+1 234 567 8900"
                                 />
                             </div>
+                            {fieldErrors.phoneNumber && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.phoneNumber}</p>
+                            )}
                         </div>
 
                         {/* Role */}
@@ -315,10 +505,23 @@ const Register = () => {
                                     required
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    onBlur={handleBlur}
+                                    className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                                        fieldErrors.password ? 'border-red-500' : 'border-gray-300'
+                                    } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                                        fieldErrors.password ? 'focus:ring-red-500' : 'focus:ring-primary'
+                                    } focus:border-transparent transition-all`}
                                     placeholder="••••••••"
                                 />
                             </div>
+                            {fieldErrors.password && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
+                            )}
+                            {!fieldErrors.password && formData.password && (
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Must be 8+ chars with uppercase, lowercase, number & special char
+                                </p>
+                            )}
                         </div>
 
                         {/* Confirm Password */}
@@ -338,10 +541,18 @@ const Register = () => {
                                     required
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
-                                    className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                    onBlur={handleBlur}
+                                    className={`appearance-none block w-full pl-10 pr-3 py-3 border ${
+                                        fieldErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                                    } rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                                        fieldErrors.confirmPassword ? 'focus:ring-red-500' : 'focus:ring-primary'
+                                    } focus:border-transparent transition-all`}
                                     placeholder="••••••••"
                                 />
                             </div>
+                            {fieldErrors.confirmPassword && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p>
+                            )}
                         </div>
                     </div>
 
