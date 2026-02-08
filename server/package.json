@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js",
-    "create-indexes": "node scripts/create-indexes.js"
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
